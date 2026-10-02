@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+env/
+ENV/
+
+# Local environment and logs
+.env
+.env.*
+!.env.example
+*.log
+
+# Node and Vite
+node_modules/
+dist/
+coverage/
+.vite/
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini

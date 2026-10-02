@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Online Proctored Exam Portal</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+
+    :root {
+      --bg: #f2f6fc;
+      --bg-soft: #ecf3fb;
+      --ink: #0f2742;
+      --muted: #536b87;
+      --surface: #ffffff;
+      --primary: #2563eb;
+      --primary-strong: #1d4ed8;
+      --primary-soft: #dbeafe;
+      --danger: #c22838;
+      --ok: #1e824e;
+      --line: #d5e2f1;
+      --shadow: 0 10px 30px rgba(16, 39, 73, 0.08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top right, #e6f0ff 0%, transparent 35%),
+        radial-gradient(circle at 5% 30%, #eff6ff 0%, transparent 26%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 14px 24px;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #d9e6f5;
+    }
+
+    .topbar-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: clamp(1.15rem, 1.45vw, 1.45rem);
+      letter-spacing: 0.2px;
+      font-weight: 800;
+    }
+
+    .topbar p {
+      margin: 4px 0 0;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 24px auto 36px;
+      padding: 0 18px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+    }
+
+    body.logged-out .container {
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      gap: 0;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    body.logged-out #authPanel .panel-head,
+    body.logged-out #workspacePanel .panel-head {
+      display: none;
+    }
+
+    body.logged-out .topbar,
+    body.logged-out .site-footer {
+      display: none;
+    }
+
+    body.logged-out #authPanel,
+    body.logged-out #workspacePanel {
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      min-height: 100vh;
+    }
+
+    body.logged-out #authPanel {
+      order: 2;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 52px;
+    }
+
+    body.logged-out #authPanel .panel-body {
+      width: 100%;
+      max-width: 650px;
+      padding: 0;
+    }
+
+    body.logged-out #workspacePanel {
+      order: 1;
+      background: #f4f4f6;
+    }
+
+    body.logged-out .workspace {
+      height: 100%;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    body.logged-out #idlePanel {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+
+    body.logged-out .tabs {
+      display: flex;
+      gap: 10px;
+      margin: 0 0 18px;
+    }
+
+    body.logged-out .tab {
+      width: auto;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      padding: 4px 0;
+      font-weight: 600;
+      color: #5f6a79;
+      background: transparent;
+    }
+
+    body.logged-out .tab.active {
+      background: transparent;
+      color: #0f172a;
+      border-color: #111827;
+    }
+
+    body.logged-out .field {
+      margin-bottom: 16px;
+    }
+
+    body.logged-out .field label {
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.78rem;
+      color: #0f2742;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    body.logged-out input,
+    body.logged-out select {
+      border-radius: 18px;
+      border-color: #d6d9e0;
+      padding: 12px 16px;
+      font-size: 1rem;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(16, 24, 40, 0.03);
+    }
+
+    body.logged-out .btn#loginBtn {
+      background: #0f1115;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+    }
+
+    body.logged-out .btn#signupBtn {
+      background: #0f1115;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+    }
+
+    .login-brand-area {
+      width: 100%;
+      height: 100%;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+
+    .login-brand-wordmark {
+      margin: 0;
+      font-size: clamp(2.1rem, 4vw, 3rem);
+      letter-spacing: 0.2px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .login-brand-wordmark span {
+      color: #2563eb;
+    }
+
+    .auth-user-head {
+      margin: 0 0 18px;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .field-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .field-label-row label {
+      margin: 0;
+    }
+
+    .field-link {
+      font-size: 0.92rem;
+      color: #0f172a;
+      text-decoration: none;
+    }
+
+    .auth-footline {
+      margin-top: 14px;
+      text-align: center;
+      color: #111827;
+    }
+
+    .auth-link-btn {
+      border: 0;
+      background: transparent;
+      color: #111827;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 0;
+      width: auto;
+      font: inherit;
+    }
+
+    body.exam-mode .container,
+    body.teacher-mode .container,
+    body.student-mode .container {
+      max-width: 100%;
+      width: 100%;
+      grid-template-columns: 1fr;
+      padding: 0 12px;
+    }
+
+    body.exam-mode #authPanel,
+    body.teacher-mode #authPanel,
+    body.student-mode #authPanel {
+      display: none !important;
+    }
+
+    body.exam-mode .workspace,
+    body.teacher-mode .workspace,
+    body.student-mode .workspace {
+      min-height: calc(100vh - 150px);
+    }
+
+    body.exam-mode #topLogoutBtn,
+    body.exam-mode #roleBadge {
+      display: none !important;
+    }
+
+    body.exam-mode .student-sidebar,
+    body.exam-mode #studentAssessmentsView,
+    body.exam-mode #examHeaderCard {
+      display: none !important;
+    }
+
+    body.exam-mode .student-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .panel,
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .panel-head {
+      border-bottom: 1px solid var(--line);
+      padding: 14px 18px;
+      background: linear-gradient(180deg, #f8fbff, #f3f8ff);
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 0.96rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: #335072;
+    }
+
+    .panel-body,
+    .workspace {
+      padding: 18px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.75rem;
+      color: #4b6584;
+      margin-bottom: 5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      padding: 11px 12px;
+      font-size: 0.94rem;
+      outline: none;
+      font-family: inherit;
+      background: #fff;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #7faaf8;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.16);
+    }
+
+    .btn {
+      border: 0;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--primary);
+      color: #fff;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.24);
+    }
+
+    .btn:hover {
+      background: var(--primary-strong);
+      transform: translateY(-1px);
+    }
+
+    .btn.secondary {
+      background: #edf4ff;
+      color: #1a4cb0;
+      box-shadow: none;
+      border: 1px solid #cfe0ff;
+    }
+
+    .btn.warning {
+      background: #0f172a;
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.25);
+    }
+
+    .btn.danger {
+      background: var(--danger);
+      box-shadow: 0 8px 18px rgba(194, 40, 56, 0.24);
+    }
+
+    .btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .tab {
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #d6e3f2;
+      background: #fff;
+      color: #1d3d65;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab.active {
+      background: #e8f0ff;
+      border-color: #bed3fc;
+      color: #1d4ed8;
+    }
+
+    .status-box {
+      border: 1px dashed #cfdded;
+      background: linear-gradient(180deg, #f9fcff, #f4f8ff);
+      border-radius: var(--radius);
+      padding: 12px;
+      font-size: 0.92rem;
+    }
+
+    .auth-title {
+      margin: 0 0 14px;
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+
+    .status-pill {
+      display: inline-block;
+      margin: 4px 6px 0 0;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: 1px solid #c9dcf7;
+      background: #eef5ff;
+      color: #1f4b90;
+    }
+
+    #roleBadge {
+      background: #e9f1ff;
+      color: #1f4db2;
+      border-color: #cadeff;
+    }
+
+    .ok {
+      background: #dff6e8;
+      border-color: #aedec0;
+      color: #1d7243;
+    }
+
+    .bad {
+      background: #ffe6ea;
+      border-color: #f4bac3;
+      color: #992433;
+    }
+
+    .warn {
+      background: #fff3df;
+      border-color: #f2d7ab;
+      color: #835318;
+    }
+
+    .landing-hero {
+      padding: 30px;
+      background:
+        radial-gradient(circle at 95% 0%, #dbeafe 0, transparent 45%),
+        linear-gradient(180deg, #ffffff 0%, #f6faff 100%);
+      animation: riseIn 0.5s ease;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #1f4eb2;
+      border: 1px solid #cbe0ff;
+      background: #eef5ff;
+      margin-bottom: 16px;
+    }
+
+    .hero-title {
+      margin: 0;
+      max-width: 720px;
+      font-size: clamp(1.7rem, 3vw, 2.35rem);
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-subtitle {
+      margin: 14px 0 0;
+      max-width: 680px;
+      color: #45607f;
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    .hero-actions {
+      margin-top: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hero-actions .btn {
+      width: auto;
+      min-width: 150px;
+      padding-inline: 18px;
+    }
+
+    .feature-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .feature-card {
+      margin: 0;
+      padding: 16px;
+    }
+
+    .feature-card h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .feature-card p {
+      margin: 0;
+      color: #4e6785;
+      line-height: 1.55;
+      font-size: 0.9rem;
+    }
+
+    .portal-hero {
+      padding: 20px;
+      margin-bottom: 14px;
+      background: linear-gradient(180deg, #ffffff, #f6faff);
+    }
+
+    .portal-hero h2 {
+      margin: 0 0 8px;
+      font-size: 1.45rem;
+      letter-spacing: -0.2px;
+    }
+
+    .teacher-switch-shell {
+      width: 100%;
+      margin: 0 0 14px;
+      min-height: 220px;
+      border: 1px solid #d9e4f2;
+      border-radius: 20px;
+      padding: 24px;
+      background: #f5f8fd;
+      display: flex;
+      align-items: center;
+      justify-content: stretch;
+    }
+
+    .teacher-switch-grid {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: stretch;
+      gap: 18px;
+    }
+
+    .teacher-switch-card {
+      border: 1px solid #d4deeb;
+      border-radius: 18px;
+      background: #fff;
+      color: #1a2e46;
+      flex: 1 1 0;
+      min-height: 130px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 14px;
+      font-size: 1.15rem;
+      font-weight: 600;
+      line-height: 1.25;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(15, 42, 76, 0.08);
+      transition: transform 0.24s ease, background 0.24s ease, box-shadow 0.24s ease;
+    }
+
+    .teacher-switch-card:hover {
+      transform: translateY(-5px);
+      background: #f4f8ff;
+      box-shadow: 0 20px 36px rgba(15, 42, 76, 0.16);
+    }
+
+    .teacher-switch-card.active {
+      color: #1f4fb8;
+      background: #ecf3ff;
+      border-color: #bfd5fb;
+    }
+
+    .teacher-view {
+      display: block;
+    }
+
+    .teacher-view.hidden {
+      display: none;
+    }
+
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+      align-items: center;
+    }
+
+    .toolbar .btn {
+      width: auto;
+      min-width: 180px;
+    }
+
+    .toolbar .filter-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .toolbar .filter-group label {
+      font-size: 0.73rem;
+      font-weight: 700;
+      color: #48688e;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .toolbar .filter-group select {
+      min-width: 190px;
+      max-width: 230px;
+      background: #fff;
+    }
+
+    .card {
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .student-layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .student-sidebar {
+      position: sticky;
+      top: 92px;
+    }
+
+    .student-sidebar .tab {
+      width: 100%;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    .assessment-filters {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(120px, 1fr));
+      gap: 8px;
+    }
+
+    .assessment-status {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #cfe0f6;
+      background: #f2f7ff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #3e618e;
+    }
+
+    .assessment-status.ongoing {
+      border-color: #b8dfc6;
+      background: #e9f9ee;
+      color: #227043;
+    }
+
+    .assessment-status.completed {
+      border-color: #cdd9e7;
+      background: #f2f5f9;
+      color: #50667f;
+    }
+
+    .assess-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .assess-actions .btn {
+      min-width: 92px;
+      width: auto;
+      padding: 8px 12px;
+    }
+
+    .question-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .question-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0;
+      padding: 12px 14px;
+      border: 1px solid #d8e4f5;
+      border-radius: 12px;
+      background: #fbfdff;
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .question-option:hover {
+      border-color: #adc9f6;
+      background: #f7faff;
+    }
+
+    .question-option input[type="radio"] {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid #7ea3de;
+      display: grid;
+      place-content: center;
+      margin: 0;
+      flex: 0 0 auto;
+      background: #fff;
+    }
+
+    .question-option input[type="radio"]::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      transform: scale(0);
+      transition: transform 0.12s ease-in-out;
+      background: var(--primary);
+    }
+
+    .question-option input[type="radio"]:checked::before {
+      transform: scale(1);
+    }
+
+    .question-option .option-text {
+      font-size: 1.1rem;
+      color: #132d4b;
+      line-height: 1.4;
+    }
+
+    .question-option.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+      background: #edf4ff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    body.teacher-mode #evalContainer {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    body.teacher-mode table {
+      min-width: 1080px;
+    }
+
+    th,
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid #d7e2f1;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef5ff;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: #3c5e86;
+    }
+
+    .video-link {
+      color: #1e4eb7;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .site-footer {
+      border-top: 1px solid #d7e4f3;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .site-footer-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: #5f7897;
+      font-size: 0.84rem;
+    }
+
+    .site-footer-inner p {
+      margin: 0;
+    }
+
+    .video-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 13, 22, 0.76);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 18px;
+    }
+
+    .video-modal.show {
+      display: flex;
+    }
+
+    .video-modal-card {
+      width: min(980px, 100%);
+      background: #0b121d;
+      border: 1px solid #29405c;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .video-modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      color: #d9e6f5;
+      font-weight: 700;
+    }
+
+    .video-modal video {
+      width: 100%;
+      max-height: 75vh;
+      border-radius: 8px;
+      background: #000;
+    }
+
+    .notice-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(9, 16, 27, 0.52);
+      z-index: 10000;
+      padding: 14px;
+    }
+
+    .notice-overlay.show {
+      display: flex;
+    }
+
+    .notice-card {
+      width: min(520px, 100%);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 14px 28px rgba(14, 25, 40, 0.22);
+      padding: 18px;
+    }
+
+    .notice-card h4 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .notice-card p {
+      margin: 0 0 12px;
+      color: #35485e;
+    }
+
+    .notice-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    @keyframes riseIn {
+      from {
+        transform: translateY(8px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .container,
+      body.logged-out .container {
+        grid-template-columns: 1fr;
+      }
+
+      body.logged-out #authPanel {
+        order: 1;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .student-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .student-sidebar {
+        position: static;
+      }
+
+      .teacher-switch-grid {
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .teacher-switch-shell {
+        min-height: auto;
+        padding: 18px;
+      }
+
+      .teacher-switch-card {
+        width: 100%;
+        min-height: 110px;
+        font-size: 1.05rem;
+      }
+
+      .topbar-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .site-footer-inner {
+        flex-direction: column;
+      }
+
+    }
+  </style>
+</head>
+<body class="logged-out">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <h1>ProctorSuite Portal</h1>
+        <p id="authState">Session: Not logged in</p>
+      </div>
+      <div class="topbar-actions">
+        <span id="roleBadge" class="status-pill hidden">Guest</span>
+        <button class="btn secondary hidden" id="topLogoutBtn" type="button" style="width:auto;min-width:120px;">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel" id="authPanel">
+      <div class="panel-head">
+        <h2>Access Management</h2>
+      </div>
+      <div class="panel-body">
+        <h2 class="auth-user-head">User</h2>
+        <div class="tabs">
+          <button class="tab active" id="loginTabBtn" type="button">Login</button>
+          <button class="tab" id="signupTabBtn" type="button">Sign Up</button>
+        </div>
+
+        <div id="loginFormWrap">
+          <div class="field">
+            <label for="loginRole">Role</label>
+            <select id="loginRole">
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="loginUsername">Username</label>
+            <input id="loginUsername" placeholder="Enter username" />
+          </div>
+          <div class="field">
+            <div class="field-label-row">
+              <label for="loginPassword">Password</label>
+              <a class="field-link" href="#" onclick="return false;">Forgot your password?</a>
+            </div>
+            <input id="loginPassword" type="password" placeholder="Enter password" />
+          </div>
+          <button class="btn" id="loginBtn" type="button">Login</button>
+          <div class="auth-footline">
+            Don't have an account?
+            <button class="auth-link-btn" id="gotoSignupBtn" type="button">Register</button>
+          </div>
+        </div>
+
+        <div id="signupFormWrap" class="hidden">
+          <div class="field">
+            <label for="signupRole">Role</label>
+            <select id="signupRole">
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="signupName">Full Name</label>
+            <input id="signupName" placeholder="Enter full name" />
+          </div>
+          <div class="field">
+            <label for="signupUsername">Username</label>
+            <input id="signupUsername" placeholder="Choose username" />
+          </div>
+          <div class="field">
+            <label for="signupPassword">Password</label>
+            <input id="signupPassword" type="password" placeholder="Choose password" />
+          </div>
+          <div class="field hidden" id="teacherCodeField">
+            <label for="teacherSignupCode">Teacher Signup Code</label>
+            <input id="teacherSignupCode" placeholder="Enter authorized code" />
+          </div>
+          <button class="btn warning" id="signupBtn" type="button">Create Account</button>
+          <div class="auth-footline">
+            Already have an account?
+            <button class="auth-link-btn" id="gotoLoginBtn" type="button">Login</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="workspacePanel">
+      <div class="panel-head">
+        <h2>Portal Workspace</h2>
+      </div>
+      <div class="workspace">
+        <div id="idlePanel" class="status-box">
+          <div class="login-brand-area">
+            <h1 class="login-brand-wordmark">proctor<span>suite</span></h1>
+          </div>
+        </div>
+
+        <div id="studentPanel" class="hidden">
+          <div class="portal-hero card">
+            <h2>Student Portal</h2>
+            <p class="muted">Track assigned exams, start attempts confidently, and complete assessments in a distraction-free interface.</p>
+          </div>
+          <div class="student-layout">
+            <aside class="student-sidebar card">
+              <h3 style="margin:0 0 10px;">Student Menu</h3>
+              <button class="tab active" id="studentNavAssessments" type="button">Assessments</button>
+              <button class="tab" id="studentNavSettings" type="button" disabled>Settings</button>
+            </aside>
+
+            <section class="student-main">
+              <div id="studentAssessmentsView" class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                  <div>
+                    <h2 style="margin:0 0 4px;">My Assessments</h2>
+                    <p class="muted" style="margin:0;">View and manage your assigned assessments</p>
+                  </div>
+                  <input id="assessmentSearch" placeholder="Search assessments..." style="max-width:320px;" />
+                </div>
+                <div class="assessment-filters" id="assessmentFilters" style="margin-top:12px;">
+                  <button class="tab active" data-filter="all" type="button">All</button>
+                  <button class="tab" data-filter="ongoing" type="button">Ongoing</button>
+                  <button class="tab" data-filter="completed" type="button">Completed</button>
+                </div>
+                <div id="assessmentTableWrap" style="margin-top:12px;"></div>
+              </div>
+
+              <div id="studentExamView" class="hidden">
+                <div class="card" id="examHeaderCard">
+                  <h3 style="margin-top: 0;">Exam Runner</h3>
+                  <div id="examMeta" class="muted"></div>
+                  <div style="margin-top: 8px;">
+                    <span class="status-pill" id="camState">Camera: Not initialized</span>
+                    <span class="status-pill" id="fullscreenState">Fullscreen: Off</span>
+                  </div>
+                </div>
+
+                <div id="questions"></div>
+                <div class="toolbar">
+                  <button class="btn danger" id="submitBtn" type="button" disabled>Submit Attempt</button>
+                </div>
+                <div id="studentResult"></div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div id="teacherPanel" class="hidden">
+          <div class="portal-hero card">
+            <h2>Teacher Portal</h2>
+            <p class="muted">Create exams, assign students, and review risk-based evaluation insights from one professional dashboard.</p>
+          </div>
+          <div class="teacher-switch-shell">
+            <div class="teacher-switch-grid">
+              <button class="teacher-switch-card active" data-teacher-view="create" type="button">Create<br>Exams</button>
+              <button class="teacher-switch-card" data-teacher-view="evaluation" type="button">Evaluation<br>Board</button>
+              <button class="teacher-switch-card" data-teacher-view="myexams" type="button">My Exams</button>
+            </div>
+          </div>
+
+          <div id="teacherCreateView" class="teacher-view">
+            <div class="card">
+              <h3 style="margin-top:0;">Create And Assign Exam</h3>
+              <div class="field">
+                <label for="newExamTitle">Exam Title</label>
+                <input id="newExamTitle" placeholder="e.g. DBMS Midterm - Set A" />
+              </div>
+              <div style="display:grid; grid-template-columns: repeat(3, minmax(140px, 1fr)); gap:8px;">
+                <div class="field">
+                  <label for="newExamDuration">Duration (minutes)</label>
+                  <input id="newExamDuration" type="number" min="1" value="60" />
+                </div>
+                <div class="field">
+                  <label for="newExamStart">Start Time</label>
+                  <input id="newExamStart" type="datetime-local" />
+                </div>
+                <div class="field">
+                  <label for="newExamEnd">End Time</label>
+                  <input id="newExamEnd" type="datetime-local" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="newExamStudents">Assign To Students (comma separated usernames, or type: all)</label>
+                <input id="newExamStudents" placeholder="student1, student2 OR all" />
+              </div>
+              <div class="field">
+                <label for="newExamQuestions">Questions (one per line: Question?|optA|optB|optC|optD|correct[a/b/c/d])</label>
+                <textarea id="newExamQuestions" rows="6" style="width:100%; border-radius:8px; border:1px solid var(--line); padding:10px;"></textarea>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button class="btn" id="createExamBtn" type="button" style="width:auto;min-width:170px;">Create And Assign</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="teacherEvaluationView" class="teacher-view hidden">
+            <div class="toolbar">
+              <button class="btn" id="refreshEvalBtn" type="button">Refresh Evaluation Board</button>
+              <div class="filter-group">
+                <label for="riskFilter">Risk Filter</label>
+                <select id="riskFilter">
+                  <option value="all">All</option>
+                  <option value="strong">Strong (&gt; 85)</option>
+                  <option value="suspicious">Suspicious (70-85)</option>
+                  <option value="normal">Normal (&lt; 70)</option>
+                </select>
+              </div>
+            </div>
+            <div id="evalContainer" class="card muted">No evaluations yet.</div>
+          </div>
+
+          <div id="teacherMyExamsView" class="teacher-view hidden">
+            <div class="toolbar">
+              <button class="btn secondary" id="refreshTeacherExamsBtn" type="button">Refresh My Exams</button>
+            </div>
+            <div id="teacherExamList" class="card muted">No exams created yet.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p>ProctorSuite</p>
+      <p>Secure assessments for modern institutions.</p>
+    </div>
+  </footer>
+  <div id="videoModal" class="video-modal">
+    <div class="video-modal-card">
+      <div class="video-modal-head">
+        <span>Recorded Proctoring Video</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn secondary" id="openVideoTabBtn" type="button" style="width:auto;min-width:160px;">Open in New Tab</button>
+          <button class="btn secondary" id="closeVideoBtn" type="button" style="width:auto;min-width:100px;">Close</button>
+        </div>
+      </div>
+      <video id="recordingPlayer" controls></video>
+    </div>
+  </div>
+  <div id="noticeOverlay" class="notice-overlay">
+    <div class="notice-card">
+      <h4 id="noticeTitle">Notice</h4>
+      <p id="noticeMessage"></p>
+      <div class="notice-actions">
+        <button class="btn secondary" id="noticeCloseBtn" type="button" style="width:auto;min-width:90px;">OK</button>
+      </div>
+    </div>
+  </div>
+  <div id="resultOverlay" class="notice-overlay">
+    <div class="notice-card">
+      <h4 id="resultTitle">Assessment Result</h4>
+      <p id="resultBody"></p>
+      <div class="notice-actions">
+        <button class="btn secondary" id="resultCloseBtn" type="button" style="width:auto;min-width:90px;">Close</button>
+      </div>
+    </div>
+  </div>
+  <div id="fullscreenOverlay" class="notice-overlay">
+    <div class="notice-card">
+      <h4>Fullscreen Exit Detected</h4>
+      <p>You exited fullscreen during an active exam. Return to fullscreen to continue safely.</p>
+      <div class="notice-actions">
+        <button class="btn secondary" id="continueWithoutFsBtn" type="button" style="width:auto;min-width:130px;">Continue</button>
+        <button class="btn" id="resumeFullscreenBtn" type="button" style="width:auto;min-width:170px;">Return To Fullscreen</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = "http://127.0.0.1:5000";
+    let token = null;
+    let currentRole = null;
+    let activeAttemptId = null;
+    let currentExam = null;
+    let selectedExamId = null;
+    let studentAssessments = [];
+    let assessmentFilter = "all";
+    let monitorAttached = false;
+    let cameraMonitorTimer = null;
+    let cameraOffLastTs = 0;
+    let submitInProgress = false;
+
+    const authState = document.getElementById("authState");
+    const roleBadge = document.getElementById("roleBadge");
+    const topLogoutBtn = document.getElementById("topLogoutBtn");
+    const authPanel = document.getElementById("authPanel");
+    const idlePanel = document.getElementById("idlePanel");
+    const studentPanel = document.getElementById("studentPanel");
+    const teacherPanel = document.getElementById("teacherPanel");
+    const studentAssessmentsView = document.getElementById("studentAssessmentsView");
+    const studentExamView = document.getElementById("studentExamView");
+    const assessmentTableWrap = document.getElementById("assessmentTableWrap");
+    const assessmentSearch = document.getElementById("assessmentSearch");
+    const assessmentFilters = document.getElementById("assessmentFilters");
+    const camState = document.getElementById("camState");
+    const fullscreenState = document.getElementById("fullscreenState");
+    const studentResult = document.getElementById("studentResult");
+    const riskFilter = document.getElementById("riskFilter");
+    const teacherExamList = document.getElementById("teacherExamList");
+    const teacherViewButtons = document.querySelectorAll("[data-teacher-view]");
+    const teacherCreateView = document.getElementById("teacherCreateView");
+    const teacherEvaluationView = document.getElementById("teacherEvaluationView");
+    const teacherMyExamsView = document.getElementById("teacherMyExamsView");
+    const videoModal = document.getElementById("videoModal");
+    const recordingPlayer = document.getElementById("recordingPlayer");
+    const openVideoTabBtn = document.getElementById("openVideoTabBtn");
+    const noticeOverlay = document.getElementById("noticeOverlay");
+    const noticeTitle = document.getElementById("noticeTitle");
+    const noticeMessage = document.getElementById("noticeMessage");
+    const resultOverlay = document.getElementById("resultOverlay");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultBody = document.getElementById("resultBody");
+    const fullscreenOverlay = document.getElementById("fullscreenOverlay");
+    const resumeFullscreenBtn = document.getElementById("resumeFullscreenBtn");
+    const continueWithoutFsBtn = document.getElementById("continueWithoutFsBtn");
+    const heroStudentBtn = document.getElementById("heroStudentBtn");
+    const heroTeacherBtn = document.getElementById("heroTeacherBtn");
+
+    function setAuthText(text) {
+      authState.textContent = "Session: " + text;
+    }
+
+    function headers() {
+      return {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      };
+    }
+
+    function setStatusPill(el, text, cls) {
+      el.textContent = text;
+      el.className = "status-pill " + (cls || "");
+    }
+
+    function setExamSessionUi(inExam) {
+      document.body.classList.toggle("exam-mode", inExam);
+      topLogoutBtn.classList.toggle("hidden", inExam || !token);
+      roleBadge.classList.toggle("hidden", inExam || !token);
+    }
+
+    function showNotice(message, title = "Notice") {
+      noticeTitle.textContent = title;
+      noticeMessage.textContent = message;
+      noticeOverlay.classList.add("show");
+    }
+
+    function closeNotice() {
+      noticeOverlay.classList.remove("show");
+    }
+
+    function reportCameraOff(reason = "camera_off") {
+      if (!activeAttemptId) return;
+      const now = Date.now();
+      if (now - cameraOffLastTs < 4000) return;
+      cameraOffLastTs = now;
+      setStatusPill(camState, "Camera: OFF / Interrupted", "bad");
+      logEvent("CAMERA_OFF", { reason });
+    }
+
+    function cleanupCameraMonitor() {
+      if (cameraMonitorTimer) {
+        clearInterval(cameraMonitorTimer);
+        cameraMonitorTimer = null;
+      }
+    }
+
+    async function api(path, options = {}) {
+      const res = await fetch(API + path, options);
+      const contentType = res.headers.get("content-type") || "";
+      let data;
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(`Server returned non-JSON response: ${text.slice(0, 120)}`);
+      }
+      if (!res.ok) {
+        throw new Error(data.error || "Request failed");
+      }
+      return data;
+    }
+
+    function showLoginTab(mode) {
+      const loginTabBtn = document.getElementById("loginTabBtn");
+      const signupTabBtn = document.getElementById("signupTabBtn");
+      const loginFormWrap = document.getElementById("loginFormWrap");
+      const signupFormWrap = document.getElementById("signupFormWrap");
+      const isLogin = mode === "login";
+
+      loginTabBtn.classList.toggle("active", isLogin);
+      signupTabBtn.classList.toggle("active", !isLogin);
+      loginFormWrap.classList.toggle("hidden", !isLogin);
+      signupFormWrap.classList.toggle("hidden", isLogin);
+    }
+
+    function setTeacherView(viewName) {
+      teacherViewButtons.forEach((btn) => {
+        btn.classList.toggle("active", btn.getAttribute("data-teacher-view") === viewName);
+      });
+      teacherCreateView.classList.toggle("hidden", viewName !== "create");
+      teacherEvaluationView.classList.toggle("hidden", viewName !== "evaluation");
+      teacherMyExamsView.classList.toggle("hidden", viewName !== "myexams");
+    }
+
+    async function login() {
+      const role = document.getElementById("loginRole").value;
+      const username = document.getElementById("loginUsername").value.trim();
+      const password = document.getElementById("loginPassword").value;
+
+      const data = await api("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role, username, password })
+      });
+
+      token = data.token;
+      currentRole = data.role;
+      setAuthText(`${data.name} (${data.role})`);
+      document.body.classList.remove("logged-out");
+      authPanel.classList.add("hidden");
+      idlePanel.classList.add("hidden");
+
+      if (currentRole === "student") {
+        roleBadge.textContent = "Student";
+        roleBadge.classList.remove("hidden");
+        topLogoutBtn.classList.remove("hidden");
+        document.body.classList.add("student-mode");
+        document.body.classList.remove("teacher-mode");
+        document.body.classList.remove("exam-mode");
+        studentPanel.classList.remove("hidden");
+        teacherPanel.classList.add("hidden");
+        await loadStudentAssessments();
+      } else {
+        roleBadge.textContent = "Teacher";
+        roleBadge.classList.remove("hidden");
+        topLogoutBtn.classList.remove("hidden");
+        document.body.classList.remove("student-mode");
+        document.body.classList.add("teacher-mode");
+        document.body.classList.remove("exam-mode");
+        teacherPanel.classList.remove("hidden");
+        studentPanel.classList.add("hidden");
+        setTeacherView("create");
+        await refreshTeacherExams();
+        await refreshEvaluations();
+      }
+    }
+
+    async function signup() {
+      const role = document.getElementById("signupRole").value;
+      const name = document.getElementById("signupName").value.trim();
+      const username = document.getElementById("signupUsername").value.trim();
+      const password = document.getElementById("signupPassword").value;
+      const teacherCode = document.getElementById("teacherSignupCode").value.trim();
+
+      await api("/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          role,
+          name,
+          username,
+          password,
+          teacher_code: teacherCode
+        })
+      });
+
+      document.getElementById("loginRole").value = role;
+      document.getElementById("loginUsername").value = username;
+      document.getElementById("loginPassword").value = password;
+      showLoginTab("login");
+      showNotice("Account created. Please login.", "Success");
+    }
+
+    function renderQuestions(exam) {
+      const qWrap = document.getElementById("questions");
+      qWrap.innerHTML = "";
+      exam.questions.forEach((q, idx) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        let html = `<div class="question-title">Q${idx + 1}. ${q.text}</div>`;
+        q.options.forEach(opt => {
+          html += `
+            <label class="question-option">
+              <input type="radio" name="${q.id}" value="${opt}" />
+              <span class="option-text">${opt}</span>
+            </label>`;
+        });
+        card.innerHTML = html;
+        qWrap.appendChild(card);
+      });
+      qWrap.querySelectorAll(".question-option input[type='radio']").forEach((radio) => {
+        radio.addEventListener("change", () => {
+          const name = radio.name;
+          qWrap.querySelectorAll(`.question-option input[name="${name}"]`).forEach((r) => {
+            r.closest(".question-option").classList.toggle("selected", r.checked);
+          });
+        });
+      });
+    }
+
+    function computeAssessmentState(exam) {
+      if (exam.result_available) return "completed";
+      if (exam.status === "available") return "ongoing";
+      if (exam.status === "upcoming") return "ongoing";
+      return "completed";
+    }
+
+    function toTitleCase(value) {
+      return (value || "").charAt(0).toUpperCase() + (value || "").slice(1);
+    }
+
+    function filteredAssessments() {
+      const query = (assessmentSearch.value || "").trim().toLowerCase();
+      return studentAssessments.filter((exam) => {
+        const state = computeAssessmentState(exam);
+        if (assessmentFilter !== "all" && state !== assessmentFilter) return false;
+        if (!query) return true;
+        return (
+          exam.title.toLowerCase().includes(query) ||
+          exam.exam_id.toLowerCase().includes(query)
+        );
+      });
+    }
+
+    function setAssessmentFilter(nextFilter) {
+      assessmentFilter = nextFilter;
+      assessmentFilters.querySelectorAll("[data-filter]").forEach((btn) => {
+        btn.classList.toggle("active", btn.getAttribute("data-filter") === nextFilter);
+      });
+      renderAssessmentTable();
+    }
+
+    function updateAssessmentFilterCounts() {
+      const counts = { all: studentAssessments.length, ongoing: 0, completed: 0 };
+      studentAssessments.forEach((exam) => {
+        const state = computeAssessmentState(exam);
+        if (state === "ongoing") counts.ongoing += 1;
+        if (state === "completed") counts.completed += 1;
+      });
+      assessmentFilters.querySelectorAll("[data-filter]").forEach((btn) => {
+        const key = btn.getAttribute("data-filter");
+        const label = toTitleCase(key);
+        btn.textContent = `${label} (${counts[key] || 0})`;
+      });
+    }
+
+    function openExamRunner(examId) {
+      const exam = studentAssessments.find((e) => e.exam_id === examId);
+      if (!exam) return;
+      selectedExamId = exam.exam_id;
+      currentExam = exam;
+      studentAssessmentsView.classList.add("hidden");
+      studentExamView.classList.remove("hidden");
+      document.getElementById("examMeta").textContent =
+        `${exam.title} | Duration: ${exam.duration_minutes} minutes | Exam ID: ${exam.exam_id} | Start: ${exam.start_at} | End: ${exam.end_at}`;
+      document.getElementById("questions").innerHTML = `
+        <div class="card muted">
+          Preparing exam...
+        </div>`;
+      studentResult.innerHTML = "";
+      document.getElementById("submitBtn").disabled = true;
+      setStatusPill(camState, "Camera: Not initialized", "");
+      setStatusPill(fullscreenState, "Fullscreen: Off", "");
+    }
+
+    function renderAssessmentTable() {
+      const rows = filteredAssessments();
+      if (!rows.length) {
+        assessmentTableWrap.innerHTML = "<div class='card muted'>No assessments found for this filter.</div>";
+        return;
+      }
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Assessment Name</th>
+              <th>Status</th>
+              <th>Timeline</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      rows.forEach((exam) => {
+        const state = computeAssessmentState(exam);
+        const canStart = state === "ongoing" && exam.status === "available";
+        const canResult = !!exam.result_available;
+        html += `
+          <tr>
+            <td>${exam.title}<br><span class="muted">${exam.exam_id}</span></td>
+            <td><span class="assessment-status ${state}">${toTitleCase(state)}</span></td>
+            <td>Start: ${exam.start_at}<br>End: ${exam.end_at}</td>
+            <td>
+              <div class="assess-actions">
+                <button class="btn start-assessment-btn" data-exam-id="${exam.exam_id}" type="button" ${canStart ? "" : "disabled"}>Start</button>
+                <button class="btn secondary results-assessment-btn" data-exam-id="${exam.exam_id}" type="button" ${canResult ? "" : "disabled"}>Results</button>
+              </div>
+            </td>
+          </tr>`;
+      });
+      html += "</tbody></table>";
+      assessmentTableWrap.innerHTML = html;
+
+      assessmentTableWrap.querySelectorAll(".start-assessment-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await startAssessment(btn.getAttribute("data-exam-id"));
+          } catch (err) {
+            showNotice(err.message, "Exam Start Error");
+          }
+        });
+      });
+      assessmentTableWrap.querySelectorAll(".results-assessment-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await openAssessmentResult(btn.getAttribute("data-exam-id"));
+          } catch (err) {
+            showNotice(err.message, "Result Error");
+          }
+        });
+      });
+    }
+
+    async function loadStudentAssessments() {
+      const data = await api("/student/exams", {
+        method: "GET",
+        headers: headers()
+      });
+      studentAssessments = data.exams || [];
+      studentAssessmentsView.classList.remove("hidden");
+      studentExamView.classList.add("hidden");
+      updateAssessmentFilterCounts();
+      renderAssessmentTable();
+    }
+
+    async function openAssessmentResult(examId) {
+      const data = await api(`/student/results/${encodeURIComponent(examId)}`, {
+        method: "GET",
+        headers: headers()
+      });
+      const r = data.result;
+      resultTitle.textContent = `Result - ${r.exam_title || r.exam_id}`;
+      resultBody.textContent =
+        `Score: ${r.score_correct}/${r.score_total} (${r.score_percent}%) | Submitted: ${r.submitted_at}`;
+      resultOverlay.classList.add("show");
+    }
+
+    async function ensureCamera() {
+      try {
+        cleanupCameraMonitor();
+        const tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        tempStream.getTracks().forEach((t) => t.stop());
+        cameraOffLastTs = 0;
+        // Permission-state polling avoids locking camera, leaving it free for OpenCV engine.
+        if (navigator.permissions && navigator.permissions.query) {
+          navigator.permissions.query({ name: "camera" }).then((status) => {
+            cameraMonitorTimer = window.setInterval(() => {
+              if (activeAttemptId && status.state !== "granted") {
+                reportCameraOff("permission_not_granted");
+              }
+            }, 2000);
+          }).catch(() => {});
+        }
+        setStatusPill(camState, "Camera: Permission OK", "ok");
+      } catch (err) {
+        setStatusPill(camState, "Camera: OFF / Blocked", "bad");
+        cleanupCameraMonitor();
+        throw new Error("Camera permission denied or unavailable.");
+      }
+    }
+
+    async function enterFullscreen() {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      }
+    }
+
+    async function startAssessment(examId) {
+      openExamRunner(examId);
+      try {
+        await startExam();
+      } catch (err) {
+        studentExamView.classList.add("hidden");
+        studentAssessmentsView.classList.remove("hidden");
+        throw err;
+      }
+    }
+
+    function collectAnswers() {
+      const answers = {};
+      document.querySelectorAll("#questions input[type='radio']:checked").forEach(el => {
+        answers[el.name] = el.value;
+      });
+      return answers;
+    }
+
+    async function startExam() {
+      if (!currentExam || !selectedExamId) {
+        throw new Error("Select an assigned exam first.");
+      }
+      if ((currentExam.status || "") !== "available") {
+        throw new Error("Selected exam is not currently available.");
+      }
+      await ensureCamera();
+      await enterFullscreen();
+      if (!document.fullscreenElement) {
+        cleanupCameraMonitor();
+        throw new Error("Fullscreen was not enabled. Please allow fullscreen and retry.");
+      }
+      setStatusPill(fullscreenState, "Fullscreen: ON", "ok");
+
+      const data = await api("/exam/start", {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify({ exam_id: selectedExamId })
+      });
+      activeAttemptId = data.attempt_id;
+      setExamSessionUi(true);
+      document.getElementById("submitBtn").disabled = false;
+      if (currentExam) {
+        renderQuestions(currentExam);
+      }
+      studentResult.innerHTML = "";
+    }
+
+    async function submitExam() {
+      if (!activeAttemptId || submitInProgress) return;
+      submitInProgress = true;
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting...";
+      try {
+        await api("/exam/submit", {
+          method: "POST",
+          headers: headers(),
+          body: JSON.stringify({ attempt_id: activeAttemptId, answers: collectAnswers() })
+        });
+        cleanupCameraMonitor();
+        activeAttemptId = null;
+        setExamSessionUi(false);
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+        await loadStudentAssessments();
+        showNotice("Attempt submitted successfully. Check Results in Assessments.", "Submitted");
+      } finally {
+        submitInProgress = false;
+        submitBtn.textContent = "Submit Attempt";
+        submitBtn.disabled = !activeAttemptId;
+      }
+    }
+
+    async function logEvent(event, meta = {}) {
+      if (!activeAttemptId || !token) return;
+      try {
+        await api("/exam/event", {
+          method: "POST",
+          headers: headers(),
+          body: JSON.stringify({ event, meta })
+        });
+      } catch (err) {
+        console.error("logEvent failed", err.message);
+      }
+    }
+
+    function attachMonitors() {
+      if (monitorAttached) return;
+      monitorAttached = true;
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) logEvent("TAB_SWITCH");
+      });
+      window.addEventListener("blur", () => logEvent("WINDOW_BLUR"));
+      document.addEventListener("copy", () => logEvent("COPY_ATTEMPT"));
+      document.addEventListener("paste", () => logEvent("PASTE_ATTEMPT"));
+      document.addEventListener("contextmenu", (e) => {
+        logEvent("RIGHT_CLICK_BLOCKED");
+        e.preventDefault();
+      });
+      document.addEventListener("keydown", (e) => {
+        const devtoolsAttempt = e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "i");
+        if (devtoolsAttempt) {
+          logEvent("DEVTOOLS_ATTEMPT");
+          e.preventDefault();
+        }
+      });
+      document.addEventListener("fullscreenchange", () => {
+        if (document.fullscreenElement) {
+          setStatusPill(fullscreenState, "Fullscreen: ON", "ok");
+          fullscreenOverlay.classList.remove("show");
+        } else {
+          setStatusPill(fullscreenState, "Fullscreen: OFF", "bad");
+          if (activeAttemptId) {
+            logEvent("FULLSCREEN_EXIT");
+            fullscreenOverlay.classList.add("show");
+          }
+        }
+      });
+    }
+
+    function parseQuestionsText(raw) {
+      const lines = raw.split("\n").map((x) => x.trim()).filter(Boolean);
+      if (!lines.length) {
+        throw new Error("Enter at least one question.");
+      }
+      const normalizeCorrectOption = (value) => {
+        const v = (value || "").trim().toLowerCase();
+        const m = v.match(/^correct\[(a|b|c|d)\]$/i);
+        if (m) return m[1].toLowerCase();
+        return v;
+      };
+      return lines.map((line) => {
+        const parts = line.split("|").map((x) => x.trim()).filter(Boolean);
+        if (parts.length !== 6) {
+          throw new Error("Each question must be: Question?|optA|optB|optC|optD|correct[a/b/c/d]");
+        }
+        const correctOption = normalizeCorrectOption(parts[5]);
+        if (!["a", "b", "c", "d"].includes(correctOption)) {
+          throw new Error("Correct option must be one of: a, b, c, d");
+        }
+        return {
+          text: parts[0],
+          options: parts.slice(1, 5),
+          correct_option: correctOption
+        };
+      });
+    }
+
+    async function createTeacherExam() {
+      const title = document.getElementById("newExamTitle").value.trim();
+      const duration = Number(document.getElementById("newExamDuration").value || 0);
+      const startAt = document.getElementById("newExamStart").value;
+      const endAt = document.getElementById("newExamEnd").value;
+      const studentList = document.getElementById("newExamStudents").value
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean);
+      const questions = parseQuestionsText(document.getElementById("newExamQuestions").value);
+
+      const data = await api("/teacher/exams", {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify({
+          title: title,
+          duration_minutes: duration,
+          start_at: startAt,
+          end_at: endAt,
+          assigned_students: studentList,
+          questions: questions
+        })
+      });
+
+      showNotice(`Exam created successfully (${data.exam_id}).`, "Success");
+      document.getElementById("newExamTitle").value = "";
+      document.getElementById("newExamQuestions").value = "";
+      await refreshTeacherExams();
+    }
+
+    async function refreshTeacherExams() {
+      const data = await api("/teacher/exams", {
+        method: "GET",
+        headers: headers()
+      });
+      const exams = data.exams || [];
+      if (!exams.length) {
+        teacherExamList.className = "card muted";
+        teacherExamList.textContent = "No exams created yet.";
+        return;
+      }
+      let html = `
+        <h3 style="margin-top:0;">My Created Exams</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Exam</th>
+              <th>Timeline</th>
+              <th>Assigned Students</th>
+              <th>Questions</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      exams.forEach((exam) => {
+        html += `
+          <tr>
+            <td>${exam.title}<br><span class="muted">${exam.exam_id} | ${exam.duration_minutes} min</span></td>
+            <td>${exam.start_at}<br>${exam.end_at}</td>
+            <td>${(exam.assigned_students || []).join(", ") || "-"}</td>
+            <td>${exam.question_count}</td>
+          </tr>`;
+      });
+      html += "</tbody></table>";
+      teacherExamList.className = "card";
+      teacherExamList.innerHTML = html;
+    }
+
+    function normalizeVideoUrl(url) {
+      if (!url) return "";
+      if (url.startsWith("http://") || url.startsWith("https://")) return url;
+      const recIdx = url.indexOf("/recordings/");
+      if (recIdx >= 0) return url.slice(recIdx);
+      if (url.startsWith("recordings/")) return "/" + url;
+      if (url.startsWith("/")) return url;
+      return "/" + url;
+    }
+
+    function openVideo(url) {
+      const normalizedUrl = normalizeVideoUrl(url);
+      openVideoTabBtn.setAttribute("data-video-url", normalizedUrl);
+      recordingPlayer.src = normalizedUrl;
+      videoModal.classList.add("show");
+      recordingPlayer.play().catch(() => {});
+    }
+
+    function closeVideo() {
+      videoModal.classList.remove("show");
+      recordingPlayer.pause();
+      recordingPlayer.removeAttribute("src");
+      recordingPlayer.load();
+      openVideoTabBtn.removeAttribute("data-video-url");
+    }
+
+    async function refreshEvaluations() {
+      const selectedRisk = (riskFilter && riskFilter.value) ? riskFilter.value : "all";
+      const data = await api(`/teacher/evaluations?risk=${encodeURIComponent(selectedRisk)}`, {
+        method: "GET",
+        headers: headers()
+      });
+      const rows = data.evaluations || [];
+      const wrap = document.getElementById("evalContainer");
+      if (!rows.length) {
+        wrap.innerHTML = "No submitted attempts yet.";
+        wrap.className = "card muted";
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Exam</th>
+              <th>Vision</th>
+              <th>Behavior</th>
+              <th>Final</th>
+                <th>Risk</th>
+                <th>Events</th>
+                <th>Submitted</th>
+                <th>Video</th>
+              </tr>
+            </thead>
+          <tbody>`;
+      rows.slice().reverse().forEach((r) => {
+        const videoCell = (
+          (r.risk_level === "strong" || r.risk_level === "suspicious") && r.video_url
+        )
+          ? `<span class="video-link" data-video-url="${r.video_url}">View Recording</span>`
+          : "-";
+        html += `
+          <tr>
+            <td>${r.student_name} (${r.student_username})</td>
+            <td>${r.exam_id}</td>
+            <td>${r.vision_probability}</td>
+            <td>${r.behavior_probability}</td>
+            <td>${r.final_probability}</td>
+            <td>${r.risk_level}</td>
+            <td>${r.total_events}</td>
+            <td>${r.submitted_at}</td>
+            <td>${videoCell}</td>
+          </tr>`;
+      });
+      html += "</tbody></table>";
+      wrap.innerHTML = html;
+      wrap.className = "card";
+      wrap.querySelectorAll(".video-link").forEach((el) => {
+        el.addEventListener("click", () => openVideo(el.getAttribute("data-video-url")));
+      });
+    }
+
+    function resetUiOnLogout() {
+      token = null;
+      currentRole = null;
+      activeAttemptId = null;
+      submitInProgress = false;
+      selectedExamId = null;
+      currentExam = null;
+      studentAssessments = [];
+      assessmentFilter = "all";
+      cleanupCameraMonitor();
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+      setExamSessionUi(false);
+      document.body.classList.remove("teacher-mode");
+      document.body.classList.remove("student-mode");
+      document.body.classList.add("logged-out");
+      authPanel.classList.remove("hidden");
+      idlePanel.classList.remove("hidden");
+      studentPanel.classList.add("hidden");
+      teacherPanel.classList.add("hidden");
+      setStatusPill(camState, "Camera: Not initialized", "");
+      setStatusPill(fullscreenState, "Fullscreen: Off", "");
+      setAuthText("Not logged in");
+      roleBadge.classList.add("hidden");
+      topLogoutBtn.classList.add("hidden");
+      studentResult.innerHTML = "";
+      studentAssessmentsView.classList.remove("hidden");
+      studentExamView.classList.add("hidden");
+      setTeacherView("create");
+      assessmentTableWrap.innerHTML = "";
+      assessmentSearch.value = "";
+      assessmentFilters.querySelectorAll("[data-filter]").forEach((btn) => {
+        btn.classList.toggle("active", btn.getAttribute("data-filter") === "all");
+      });
+      document.getElementById("examMeta").textContent = "";
+      document.getElementById("questions").innerHTML = "";
+      document.getElementById("submitBtn").disabled = true;
+    }
+
+    document.getElementById("loginTabBtn").addEventListener("click", () => showLoginTab("login"));
+    document.getElementById("signupTabBtn").addEventListener("click", () => showLoginTab("signup"));
+    document.getElementById("gotoSignupBtn").addEventListener("click", () => showLoginTab("signup"));
+    document.getElementById("gotoLoginBtn").addEventListener("click", () => showLoginTab("login"));
+
+    document.getElementById("signupRole").addEventListener("change", (e) => {
+      const showTeacherCode = e.target.value === "teacher";
+      document.getElementById("teacherCodeField").classList.toggle("hidden", !showTeacherCode);
+    });
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      try {
+        attachMonitors();
+        await login();
+      } catch (err) {
+        showNotice(err.message, "Login Error");
+      }
+    });
+
+    document.getElementById("signupBtn").addEventListener("click", async () => {
+      try {
+        await signup();
+      } catch (err) {
+        showNotice(err.message, "Signup Error");
+      }
+    });
+
+    document.getElementById("submitBtn").addEventListener("click", async () => {
+      try {
+        await submitExam();
+      } catch (err) {
+        showNotice(err.message, "Submission Error");
+      }
+    });
+    assessmentSearch.addEventListener("input", () => renderAssessmentTable());
+    assessmentFilters.querySelectorAll("[data-filter]").forEach((btn) => {
+      btn.addEventListener("click", () => setAssessmentFilter(btn.getAttribute("data-filter")));
+    });
+    teacherViewButtons.forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const viewName = btn.getAttribute("data-teacher-view");
+        setTeacherView(viewName);
+        try {
+          if (viewName === "evaluation") {
+            await refreshEvaluations();
+          } else if (viewName === "myexams") {
+            await refreshTeacherExams();
+          }
+        } catch (err) {
+          showNotice(err.message, "Fetch Error");
+        }
+      });
+    });
+
+    document.getElementById("refreshEvalBtn").addEventListener("click", async () => {
+      try {
+        await refreshEvaluations();
+      } catch (err) {
+        showNotice(err.message, "Fetch Error");
+      }
+    });
+    document.getElementById("createExamBtn").addEventListener("click", async () => {
+      try {
+        await createTeacherExam();
+      } catch (err) {
+        showNotice(err.message, "Create Exam Error");
+      }
+    });
+    document.getElementById("refreshTeacherExamsBtn").addEventListener("click", async () => {
+      try {
+        await refreshTeacherExams();
+      } catch (err) {
+        showNotice(err.message, "Fetch Error");
+      }
+    });
+    riskFilter.addEventListener("change", async () => {
+      try {
+        await refreshEvaluations();
+      } catch (err) {
+        showNotice(err.message, "Filter Error");
+      }
+    });
+    document.getElementById("closeVideoBtn").addEventListener("click", closeVideo);
+    videoModal.addEventListener("click", (e) => {
+      if (e.target === videoModal) {
+        closeVideo();
+      }
+    });
+    recordingPlayer.addEventListener("error", () => {
+      showNotice(
+        "Unable to play this recording in embedded player. Use 'Open in New Tab' to view/download.",
+        "Playback Error"
+      );
+    });
+    openVideoTabBtn.addEventListener("click", () => {
+      const url = openVideoTabBtn.getAttribute("data-video-url");
+      if (url) {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+    });
+    document.getElementById("resultCloseBtn").addEventListener("click", () => {
+      resultOverlay.classList.remove("show");
+    });
+    resultOverlay.addEventListener("click", (e) => {
+      if (e.target === resultOverlay) {
+        resultOverlay.classList.remove("show");
+      }
+    });
+    resumeFullscreenBtn.addEventListener("click", async () => {
+      try {
+        await enterFullscreen();
+        if (document.fullscreenElement) {
+          fullscreenOverlay.classList.remove("show");
+        }
+      } catch (err) {
+        showNotice("Unable to restore fullscreen. Please allow fullscreen in browser.", "Fullscreen");
+      }
+    });
+    continueWithoutFsBtn.addEventListener("click", () => {
+      fullscreenOverlay.classList.remove("show");
+    });
+    fullscreenOverlay.addEventListener("click", (e) => {
+      if (e.target === fullscreenOverlay) {
+        fullscreenOverlay.classList.remove("show");
+      }
+    });
+    document.getElementById("noticeCloseBtn").addEventListener("click", closeNotice);
+    noticeOverlay.addEventListener("click", (e) => {
+      if (e.target === noticeOverlay) {
+        closeNotice();
+      }
+    });
+    if (heroStudentBtn) {
+      heroStudentBtn.addEventListener("click", () => {
+        showLoginTab("login");
+        document.getElementById("loginRole").value = "student";
+        document.getElementById("loginUsername").focus();
+      });
+    }
+    if (heroTeacherBtn) {
+      heroTeacherBtn.addEventListener("click", () => {
+        showLoginTab("login");
+        document.getElementById("loginRole").value = "teacher";
+        document.getElementById("loginUsername").focus();
+      });
+    }
+
+    topLogoutBtn.addEventListener("click", resetUiOnLogout);
+  </script>
+</body>
+</html>
